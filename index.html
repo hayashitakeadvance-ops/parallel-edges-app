@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>面に平行な辺（直方体）</title>
+<title>面に垂直な辺（直方体）</title>
 <style>
   :root {
     --bg:#0b1220; --text:#e8eefc; --muted:#a9b4d0;
@@ -199,7 +199,7 @@
 <body>
 <div class="app">
 
-  <div class="topmsg" id="topmsg">ピンクの面に平行な辺は４つあります。４つの辺を指でさわりましょう。</div>
+  <div class="topmsg" id="topmsg">ピンクの面に垂直な辺は４つあります。４つの辺を指でさわりましょう。</div>
 
   <div class="hud">
 
@@ -238,7 +238,7 @@
   const V = {"A": [44, 395], "B": [1160, 395], "C": [1490, 110], "D": [418, 110], "A2": [44, 831], "B2": [1160, 831], "C2": [1490, 517], "D2": [418, 517]};
   const edges = {"AB": ["A", "B"], "BC": ["B", "C"], "CD": ["C", "D"], "DA": ["D", "A"], "A2B2": ["A2", "B2"], "B2C2": ["B2", "C2"], "C2D2": ["C2", "D2"], "D2A2": ["D2", "A2"], "AA2": ["A", "A2"], "BB2": ["B", "B2"], "CC2": ["C", "C2"], "DD2": ["D", "D2"]};
   const faces = {"上": ["A", "D", "C", "B"], "手前": ["A", "B", "B2", "A2"], "右": ["B", "C", "C2", "B2"], "左": ["A", "D", "D2", "A2"]};
-  const correctForTarget = {"上": ["A2B2", "B2C2", "C2D2", "D2A2"], "左": ["BC", "CC2", "B2C2", "BB2"], "右": ["DA", "DD2", "D2A2", "AA2"], "手前": ["CD", "CC2", "C2D2", "DD2"]};
+  const correctForTarget = {"上": ["AA2", "BB2", "CC2", "DD2"], "左": ["AB", "CD", "A2B2", "C2D2"], "右": ["AB", "CD", "A2B2", "C2D2"], "手前": ["DA", "BC", "D2A2", "B2C2"]};
   const targets = Object.keys(correctForTarget);
 
   const pinkPoly = document.getElementById("pinkPoly");
