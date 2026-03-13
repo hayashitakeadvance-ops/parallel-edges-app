@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>みぎ・ひだり ばんめ アプリ</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background: #f8efe9;
+      color: #222;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fffaf7;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    .points {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      font-size: clamp(16px, 2vw, 24px);
+      font-weight: 900;
+      color: #3d6fb6;
+    }
+
+    .hanamaru {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(90px, 18vw, 180px);
+      z-index: 999;
+      pointer-events: none;
+      animation: popIn 0.7s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .question {
+      font-size: clamp(28px, 4vw, 50px);
+      font-weight: 900;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+
+    .questionBox {
+      display: inline-block;
+      background: #fff6bf;
+      border: 3px solid #e5d37a;
+      border-radius: 12px;
+      padding: 8px 16px;
+    }
+
+    .hiddenWord {
+      display: inline-block;
+      background: #ffffff;
+      border: 2px solid #d9d9d9;
+      border-radius: 6px;
+      padding: 0.08em 0.28em;
+      color: transparent;
+      min-width: 2.8em;
+      vertical-align: middle;
+      user-select: none;
+    }
+
+    .touchText {
+      font-size: 0.72em;
+      font-weight: 700;
+      color: #2f7d57;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    .smallText {
+      font-size: 0.72em;
+    }
+
+    .redChar {
+      color: #d83a3a;
+    }
+
+    .shelfRow {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .sideLabel {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      background: #ffffff;
+      border: 2px solid #ddd;
+      border-radius: 24px;
+      padding: 18px 10px;
+      font-size: clamp(26px, 3vw, 42px);
+      font-weight: 900;
+      color: #333;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      min-height: 170px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shelfWrap {
+      background: #f8ddd3;
+      border-radius: 24px;
+      padding: 28px 24px 20px;
+      flex: 1;
+    }
+
+    .shelf {
+      background: #ead2c6;
+      border-radius: 12px 12px 4px 4px;
+      min-height: 140px;
+      padding: 14px 16px 10px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 18px;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45);
+      border-bottom: 12px solid #d6b7a8;
+    }
+
+    .fruitBtn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 16px;
+      flex: 0 0 auto;
+      transition: transform 0.12s ease;
+    }
+
+    .fruitBtn:active {
+      transform: scale(0.96);
+    }
+
+    .fruitBtn.selected {
+      background: rgba(255, 210, 226, 0.55);
+      outline: 4px solid #f3b3c8;
+    }
+
+    .fruitSvg {
+      width: 120px;
+      height: 110px;
+      display: block;
+    }
+
+    .message {
+      min-height: 56px;
+      margin-top: 20px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 900;
+      background: #fafafa;
+    }
+
+    .ok { color: #138a36; }
+    .ng { color: #cc3355; }
+
+    .footerLink {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .footerLink a {
+      color: #666;
+      text-decoration: none;
+    }
+
+    .footerLink a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+      .fruitSvg {
+        width: 92px;
+        height: 84px;
+      }
+      .shelf {
+        gap: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      .sideLabel {
+        min-height: 130px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .wrap { padding: 12px; }
+      .card { padding: 16px; }
+      .shelfRow { gap: 8px; }
+      .fruitSvg {
+        width: 70px;
+        height: 64px;
+      }
+      .shelf { gap: 6px; }
+      .sideLabel {
+        font-size: 22px;
+        min-height: 110px;
+        padding: 12px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div id="points" class="points">0ポイント</div>
+      <div id="hanamaru" class="hanamaru">💮</div>
+
+      <div id="question" class="question"></div>
+
+      <div class="shelfRow">
+        <div class="sideLabel">ひだり</div>
+        <div class="shelfWrap">
+          <div id="shelf" class="shelf"></div>
+        </div>
+        <div class="sideLabel">みぎ</div>
+      </div>
+
+      <div id="message" class="message"></div>
+
+      <div class="footerLink">
+        <a href="https://land.toss-online.com/" target="_blank" rel="noopener noreferrer">TOSSランド</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questionEl = document.getElementById('question');
+    const shelfEl = document.getElementById('shelf');
+    const messageEl = document.getElementById('message');
+    const pointsEl = document.getElementById('points');
+    const hanamaruEl = document.getElementById('hanamaru');
+
+    const praiseMessages = ['せいかい！', 'かしこい！', 'てんさい！', 'すごい！', '１００点！'];
+
+    const fruitPool = [
+      { key: 'banana', name: 'バナナ' },
+      { key: 'strawberry', name: 'いちご' },
+      { key: 'melon', name: 'メロン' },
+      { key: 'grape', name: 'ぶどう' },
+      { key: 'watermelon', name: 'すいか' },
+      { key: 'apple', name: 'りんご' },
+      { key: 'orange', name: 'みかん' }
+    ];
+
+    const state = {
+      fruits: [],
+      answerIndex: 0,
+      selectedIndex: null,
+      fromSide: 'left',
+      points: 0,
+      locked: false
+    };
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function makeProblem() {
+      const counts = [3, 4, 5, 6, 7];
+      const count = counts[Math.floor(Math.random() * counts.length)];
+      const visiblePool = [
+        { key: 'banana', name: 'バナナ' },
+        { key: 'strawberry', name: 'いちご' },
+        { key: 'melon', name: 'メロン' },
+        { key: 'grape', name: 'ぶどう' },
+        { key: 'watermelon', name: 'すいか' },
+        { key: 'apple', name: 'りんご' },
+        { key: 'orange', name: 'みかん' }
+      ];
+
+      state.fruits = shuffle(visiblePool).slice(0, count);
+
+      while (state.fruits.length < 3) {
+        state.fruits = shuffle(visiblePool).slice(0, 3);
+      }
+
+      state.answerIndex = Math.floor(Math.random() * state.fruits.length);
+      state.fromSide = Math.random() < 0.5 ? 'left' : 'right';
+      state.selectedIndex = null;
+      state.locked = false;
+    }
+
+    function getQuestionNumber() {
+      return state.fromSide === 'left'
+        ? state.answerIndex + 1
+        : state.fruits.length - state.answerIndex;
+    }
+
+    function updateQuestion() {
+      const fruitName = state.fruits[state.answerIndex].name;
+      const sideText = state.fromSide === 'left' ? 'ひだり' : 'みぎ';
+      const num = getQuestionNumber();
+      questionEl.innerHTML =
+        `<span class="questionBox"><span class="hiddenWord" aria-label="${fruitName}">${fruitName}</span><span class="smallText">は、</span>${sideText}<span class="smallText">から</span> ${num}ばん<span class="redChar">め</span></span><span class="touchText"> を さわろう</span>`;
+    }
+
+    function updateMessage() {
+      if (state.selectedIndex === null) {
+        messageEl.className = 'message';
+        messageEl.textContent = '';
+        return;
+      }
+
+      if (state.selectedIndex === state.answerIndex) {
+        state.locked = true;
+        state.points += 1;
+        pointsEl.textContent = `${state.points}ポイント`;
+        messageEl.className = 'message ok';
+        messageEl.textContent = praiseMessages[Math.floor(Math.random() * praiseMessages.length)];
+
+        if (state.points > 0 && state.points % 5 === 0) {
+          hanamaruEl.style.display = 'flex';
+          setTimeout(() => {
+            hanamaruEl.style.display = 'none';
+          }, 700);
+        }
+
+        setTimeout(() => {
+          nextProblem();
+        }, 900);
+      } else {
+        messageEl.className = 'message ng';
+        messageEl.textContent = 'おしい！';
+      }
+    }
+
+    function fruitSVG(key) {
+      if (key === 'banana') {
+        return `
+          <svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M26 54 C35 23, 66 16, 91 23 C80 29, 69 38, 63 49 C57 60, 54 72, 54 83 C42 78, 32 69, 26 54 Z" fill="#ffc928"/>
+            <path d="M24 68 C33 40, 60 30, 81 32 C73 38, 66 47, 63 57 C60 66, 59 75, 60 84 C47 83, 34 79, 24 68 Z" fill="#ffdb4d"/>
+            <path d="M29 82 C37 57, 61 47, 79 49 C72 54, 67 62, 64 70 C61 78, 61 86, 62 93 C49 95, 37 92, 29 82 Z" fill="#ffbf24"/>
+            <rect x="86" y="18" width="7" height="10" rx="2" fill="#a86d22"/>
+          </svg>`;
+      }
+
+      if (key === 'strawberry') {
+        return `
+          <svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M58 24 C45 24, 34 35, 34 51 C34 73, 49 92, 60 92 C71 92, 86 73, 86 51 C86 35, 75 24, 62 24 Z" fill="#f53a30"/>
+            <path d="M48 23 L60 14 L72 23" fill="#2dbb5d"/>
+            <circle cx="52" cy="44" r="1.8" fill="#7a2a17"/>
+            <circle cx="63" cy="41" r="1.8" fill="#7a2a17"/>
+            <circle cx="71" cy="50" r="1.8" fill="#7a2a17"/>
+            <circle cx="56" cy="56" r="1.8" fill="#7a2a17"/>
+            <circle cx="67" cy="61" r="1.8" fill="#7a2a17"/>
+          </svg>`;
+      }
+
+      if (key === 'melon') {
+        return `
+          <svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="60" cy="55" r="34" fill="#dfe8da"/>
+            <path d="M60 21 C58 18, 58 14, 62 12 C65 14, 65 18, 63 21" fill="#caa84d"/>
+            <path d="M35 40 C48 28, 73 27, 84 39 C90 46, 93 56, 88 68 C80 84, 60 89, 45 82 C30 75, 25 56, 35 40 Z" fill="none" stroke="#b7c5b0" stroke-width="2"/>
+            <path d="M33 53 C45 44, 77 44, 89 55" fill="none" stroke="#b7c5b0" stroke-width="2"/>
+            <path d="M41 26 C49 38, 50 74, 44 84" fill="none" stroke="#b7c5b0" stroke-width="2"/>
+            <path d="M61 22 C64 37, 64 73, 60 88" fill="none" stroke="#b7c5b0" stroke-width="2"/>
+            <path d="M79 29 C72 43, 72 70, 79 82" fill="none" stroke="#b7c5b0" stroke-width="2"/>
+          </svg>`;
+      }
+
+      if (key === 'grape') {
+        return `
+          <svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="68" y="13" width="8" height="10" rx="2" fill="#89612b"/>
+            <circle cx="54" cy="30" r="11" fill="#5676e8"/>
+            <circle cx="68" cy="29" r="11" fill="#5b7ff0"/>
+            <circle cx="80" cy="36" r="11" fill="#4e71df"/>
+            <circle cx="50" cy="44" r="11" fill="#6b89f2"/>
+            <circle cx="64" cy="44" r="11" fill="#597cf0"/>
+            <circle cx="78" cy="47" r="11" fill="#4b6cda"/>
+            <circle cx="56" cy="58" r="11" fill="#6281ee"/>
+            <circle cx="70" cy="59" r="11" fill="#5376e2"/>
+            <circle cx="62" cy="73" r="11" fill="#6e8df3"/>
+          </svg>`;
+      }
+
+      if (key === 'watermelon') {
+        return `
+          <svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M25 68 A36 36 0 0 1 95 68 Z" fill="#16a65a"/>
+            <path d="M31 66 A30 30 0 0 1 89 66 Z" fill="#ffffff"/>
+            <path d="M35 63 A26 26 0 0 1 85 63 Z" fill="#f53b30"/>
+            <ellipse cx="48" cy="57" rx="2" ry="4" fill="#1b1b1b"/>
+            <ellipse cx="60" cy="53" rx="2" ry="4" fill="#1b1b1b"/>
+            <ellipse cx="73" cy="58" rx="2" ry="4" fill="#1b1b1b"/>
+          </svg>`;
+      }
+
+      if (key === 'orange') {
+        return `
+          <svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="60" cy="56" r="28" fill="#ff9c2e"/>
+            <circle cx="52" cy="50" r="10" fill="#ffb84f" opacity="0.55"/>
+            <path d="M63 28 C63 20, 69 15, 76 15" stroke="#9a5a22" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M75 15 C83 16, 87 21, 89 29 C82 27, 77 24, 75 15 Z" fill="#57c558"/>
+          </svg>`;
+      }
+
+      if (key === 'apple') {
+        return `
+          <svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="60" cy="56" r="30" fill="#ff4438"/>
+            <path d="M63 24 C63 16, 69 11, 76 11" stroke="#9a5a22" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M75 11 C83 12, 87 17, 89 25 C82 23, 77 20, 75 11 Z" fill="#57c558"/>
+          </svg>`;
+      }
+
+      return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>`;
+    }
+
+    function renderShelf() {
+      shelfEl.innerHTML = '';
+      state.fruits.forEach((fruit, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'fruitBtn' + (state.selectedIndex === index ? ' selected' : '');
+        btn.innerHTML = fruitSVG(fruit.key);
+
+        btn.addEventListener('click', () => {
+          if (state.locked) return;
+          state.selectedIndex = index;
+          renderShelf();
+          updateMessage();
+        });
+
+        shelfEl.appendChild(btn);
+      });
+    }
+
+    function nextProblem() {
+      makeProblem();
+      updateQuestion();
+      renderShelf();
+      messageEl.className = 'message';
+      messageEl.textContent = '';
+      pointsEl.textContent = `${state.points}ポイント`;
+    }
+
+    nextProblem();
+  </script>
+</body>
+</html>
