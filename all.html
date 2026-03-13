@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>いろいろ な なんばんめ アプリ</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+      background: #f7f1ea;
+      color: #222;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fffaf7;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      position: relative;
+    }
+
+    .points {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      font-size: clamp(16px, 2vw, 24px);
+      font-weight: 900;
+      color: #3d6fb6;
+    }
+
+    .hanamaru {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(90px, 18vw, 180px);
+      z-index: 999;
+      pointer-events: none;
+      animation: popIn 0.7s ease;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      60% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .question {
+      font-size: clamp(22px, 3vw, 38px);
+      font-weight: 900;
+      margin-bottom: 18px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .questionBox {
+      display: inline-block;
+      background: #fff6bf;
+      border: 3px solid #e5d37a;
+      border-radius: 12px;
+      padding: 8px 16px;
+      white-space: nowrap;
+    }
+
+    .hiddenWord {
+      display: inline-block;
+      background: #ffffff;
+      border: 2px solid #d9d9d9;
+      border-radius: 6px;
+      padding: 0.08em 0.28em;
+      color: transparent;
+      min-width: 2.8em;
+      vertical-align: middle;
+      user-select: none;
+    }
+
+    .smallText {
+      font-size: 0.72em;
+    }
+
+    .redChar {
+      color: #d83a3a;
+    }
+
+    .touchText {
+      font-size: 0.72em;
+      font-weight: 700;
+      color: #2f7d57;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    .playArea {
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hScene {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .vScene {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .dirLabelSide {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      background: #fff;
+      border: 2px solid #ddd;
+      border-radius: 24px;
+      padding: 18px 10px;
+      font-size: clamp(26px, 3vw, 42px);
+      font-weight: 900;
+      color: #333;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      min-height: 170px;
+      min-width: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+
+    .dirLabelTopBottom {
+      text-align: center;
+      font-size: clamp(28px, 3vw, 42px);
+      font-weight: 900;
+      color: #333;
+      margin: 8px 0;
+    }
+
+    .railWrap {
+      background: #f8ddd3;
+      border-radius: 24px;
+      padding: 18px 28px;
+      width: min(720px, 92%);
+    }
+
+    .rail {
+      background: #ead2c6;
+      border-radius: 12px;
+      min-height: 150px;
+      padding: 14px 16px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45);
+      border-bottom: 12px solid #d6b7a8;
+    }
+
+    .shelfWrap {
+      background: #e2b899;
+      border-radius: 24px;
+      padding: 18px 20px;
+      width: min(420px, 90%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.35);
+      margin: 0 auto;
+    }
+
+    .shelf {
+      background: #f6e1cc;
+      border: 14px solid #b6805e;
+      border-radius: 8px;
+      min-height: 380px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 14px;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shelfLine {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      height: 3px;
+      background: #d7a27e;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .itemBtn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      padding: 2px 10px;
+      border-radius: 18px;
+      transition: transform 0.12s ease;
+      position: relative;
+      z-index: 1;
+      width: calc(100% - 24px);
+      max-width: 460px;
+      box-sizing: border-box;
+    }
+
+    .itemBtn:active {
+      transform: scale(0.96);
+    }
+
+    .itemBtn.selected {
+      background: rgba(255, 210, 226, 0.45);
+      border: 1.5px solid #f3b3c8;
+      border-radius: 10px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .carBtn {
+      width: 140px;
+      max-width: 140px;
+    }
+
+    .carSvg {
+      width: 130px;
+      height: 84px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .hatBtn {
+      width: calc(100% - 24px);
+      max-width: 320px;
+    }
+
+    .hatSvg {
+      width: 300px;
+      height: 80px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .fruitBtn {
+      width: 150px;
+      max-width: 150px;
+    }
+
+    .fruitSvg {
+      width: 120px;
+      height: 100px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .message {
+      min-height: 56px;
+      margin-top: 20px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(24px, 3vw, 36px);
+      font-weight: 900;
+      background: #fafafa;
+    }
+
+    .ok { color: #138a36; }
+    .ng { color: #cc3355; }
+
+    .footerLink {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .footerLink a {
+      color: #666;
+      text-decoration: none;
+    }
+
+    .footerLink a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 700px) {
+      .wrap { padding: 12px; }
+      .card { padding: 16px; }
+      .carBtn { width: 100px; max-width: 100px; }
+      .carSvg { width: 92px; height: 60px; }
+      .fruitBtn { width: 100px; max-width: 100px; }
+      .fruitSvg { width: 76px; height: 64px; }
+      .hatBtn { width: calc(100% - 20px); max-width: 210px; }
+      .hatSvg { width: 190px; height: 80px; }
+      .rail { gap: 8px; }
+      .shelf { min-height: 480px; }
+      .dirLabelSide { font-size: 22px; min-height: 110px; min-width: 70px; padding: 12px 6px; }
+      .dirLabelTopBottom { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div id="points" class="points">0ポイント</div>
+      <div id="hanamaru" class="hanamaru">💮</div>
+
+      <div id="question" class="question"></div>
+      <div id="playArea" class="playArea"></div>
+      <div id="message" class="message"></div>
+      <div class="footerLink"><a href="https://land.toss-online.com/" target="_blank" rel="noopener noreferrer">TOSSランド</a></div>
+    </div>
+  </div>
+
+  <script>
+    const questionEl = document.getElementById('question');
+    const playAreaEl = document.getElementById('playArea');
+    const messageEl = document.getElementById('message');
+    const pointsEl = document.getElementById('points');
+    const hanamaruEl = document.getElementById('hanamaru');
+
+    const praiseMessages = ['せいかい！', 'かしこい！', 'てんさい！', 'すごい！', '１００点！'];
+
+    const carPool = Array.from({ length: 7 }, (_, i) => ({ key: `car${i + 1}`, name: 'くるま' }));
+
+    const hatPool = [
+      { key: 'redhat', name: 'あかぼうし' },
+      { key: 'yellowhat', name: 'きぼうし' },
+      { key: 'whitehat', name: 'しろぼうし' },
+      { key: 'bluehat', name: 'あおぼうし' },
+      { key: 'greenhat', name: 'みどりぼうし' },
+      { key: 'pinkhat', name: 'ももいろぼうし' },
+      { key: 'blackhat', name: 'くろぼうし' }
+    ];
+
+    const fruitPool = [
+      { key: 'banana', name: 'バナナ' },
+      { key: 'strawberry', name: 'いちご' },
+      { key: 'melon', name: 'メロン' },
+      { key: 'grape', name: 'ぶどう' },
+      { key: 'watermelon', name: 'すいか' },
+      { key: 'apple', name: 'りんご' },
+      { key: 'orange', name: 'みかん' }
+    ];
+
+    const state = {
+      type: 'car',
+      items: [],
+      answerIndex: 0,
+      selectedIndex: null,
+      selectedIndexes: [],
+      fromSide: 'front',
+      mode: 'ordinal',
+      targetCount: 1,
+      points: 0,
+      locked: false
+    };
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function sampleCount(type) {
+      if (type === 'hat') return [3, 4, 5][Math.floor(Math.random() * 3)];
+      if (type === 'car') return [3, 4, 5][Math.floor(Math.random() * 3)];
+      if (type === 'fruit') return [3, 4, 5][Math.floor(Math.random() * 3)];
+      return [3, 4, 5][Math.floor(Math.random() * 3)];
+    }
+
+    function makeProblem() {
+      const types = ['car', 'fruit', 'hat'];
+      state.type = types[Math.floor(Math.random() * types.length)];
+      const count = sampleCount(state.type);
+
+      if (state.type === 'car') {
+        state.items = shuffle(carPool).slice(0, count);
+        state.fromSide = Math.random() < 0.5 ? 'front' : 'back';
+        state.mode = Math.random() < 0.5 ? 'ordinal' : 'count';
+        state.targetCount = Math.floor(Math.random() * state.items.length) + 1;
+        state.answerIndex = state.mode === 'count'
+          ? (state.fromSide === 'front' ? state.targetCount - 1 : state.items.length - state.targetCount)
+          : Math.floor(Math.random() * state.items.length);
+      } else if (state.type === 'fruit') {
+        state.items = shuffle(fruitPool).slice(0, count);
+        state.fromSide = Math.random() < 0.5 ? 'left' : 'right';
+        state.mode = 'ordinal';
+        state.targetCount = 1;
+        state.answerIndex = Math.floor(Math.random() * state.items.length);
+      } else {
+        state.items = shuffle(hatPool).slice(0, count);
+        state.fromSide = Math.random() < 0.5 ? 'top' : 'bottom';
+        state.mode = 'ordinal';
+        state.targetCount = 1;
+        state.answerIndex = Math.floor(Math.random() * state.items.length);
+      }
+
+      state.selectedIndex = null;
+      state.selectedIndexes = [];
+      state.locked = false;
+    }
+
+    function getQuestionNumber() {
+      if (state.mode === 'count') return state.targetCount;
+      if (state.fromSide === 'front' || state.fromSide === 'left' || state.fromSide === 'top') {
+        return state.answerIndex + 1;
+      }
+      return state.items.length - state.answerIndex;
+    }
+
+    function getCorrectIndexes() {
+      if (state.mode !== 'count') return [state.answerIndex];
+      if (state.fromSide === 'front') {
+        return Array.from({ length: state.targetCount }, (_, i) => i);
+      }
+      return Array.from({ length: state.targetCount }, (_, i) => state.items.length - state.targetCount + i);
+    }
+
+    function fromText() {
+      if (state.fromSide === 'front') return 'まえ<span class="smallText">から</span>';
+      if (state.fromSide === 'back') return 'うしろ<span class="smallText">から</span>';
+      if (state.fromSide === 'left') return 'ひだり<span class="smallText">から</span>';
+      if (state.fromSide === 'right') return 'みぎ<span class="smallText">から</span>';
+      if (state.fromSide === 'top') return 'うえ<span class="smallText">から</span>';
+      return 'した<span class="smallText">から</span>';
+    }
+
+    function updateQuestion() {
+      const itemName = state.items[state.answerIndex].name;
+      const num = getQuestionNumber();
+      const suffix = state.mode === 'count' && state.type === 'car'
+        ? 'だい'
+        : `ばん<span class="redChar">め</span>`;
+
+      questionEl.innerHTML = `<span class="questionBox"><span class="hiddenWord" aria-label="${itemName}">${itemName}</span><span class="smallText">は、</span>${fromText()} ${num}${suffix}</span><span class="touchText"> を さわろう</span>`;
+    }
+
+    function updateMessage() {
+      const selected = state.mode === 'count'
+        ? [...state.selectedIndexes].sort((a, b) => a - b)
+        : (state.selectedIndex === null ? [] : [state.selectedIndex]);
+
+      if (selected.length === 0) {
+        messageEl.className = 'message';
+        messageEl.textContent = '';
+        return;
+      }
+
+      const correct = getCorrectIndexes();
+
+      if (state.mode === 'count') {
+        if (selected.length < state.targetCount) {
+          messageEl.className = 'message';
+          messageEl.textContent = '';
+          return;
+        }
+        if (selected.length > state.targetCount) {
+          messageEl.className = 'message ng';
+          messageEl.textContent = 'おしい！';
+          return;
+        }
+      }
+
+      const ok = selected.length === correct.length && selected.every((v, i) => v === correct[i]);
+
+      if (ok) {
+        state.locked = true;
+        state.points += 1;
+        pointsEl.textContent = `${state.points}ポイント`;
+        messageEl.className = 'message ok';
+        messageEl.textContent = praiseMessages[Math.floor(Math.random() * praiseMessages.length)];
+
+        if (state.points > 0 && state.points % 5 === 0) {
+          hanamaruEl.style.display = 'flex';
+          setTimeout(() => {
+            hanamaruEl.style.display = 'none';
+          }, 700);
+        }
+
+        setTimeout(() => {
+          nextProblem();
+        }, 900);
+      } else {
+        messageEl.className = 'message ng';
+        messageEl.textContent = 'おしい！';
+      }
+    }
+
+    function carSVG(selected) {
+      const body = selected ? '#e84c4c' : '#ffffff';
+      return `
+        <svg class="carSvg" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M20 52 L20 30 Q20 22 28 22 L40 22 L48 12 Q50 8 55 8 L78 8 Q84 8 84 14 L84 22 L96 22 Q104 22 104 30 L104 52 Z" fill="${body}" stroke="#808080" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M51 14 L77 14 Q80 14 80 18 L80 22 L45 22 Z" fill="#d9eefc" stroke="#808080" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="57" cy="18.5" r="4.2" fill="#f4c7a1"/>
+          <path d="M53 17 C54 13.5, 60 13.5, 61 17" fill="#4b4b4b"/>
+          <path d="M52.5 24 C53.5 21.5, 56 20.5, 58.5 20.5 C61 20.5, 63 21.7, 64 24" fill="#5aa0ff" opacity="0.9"/>
+          <line x1="61" y1="14" x2="58" y2="22" stroke="#808080" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="42" cy="56" r="7" fill="#666"/>
+          <circle cx="83" cy="56" r="7" fill="#666"/>
+        </svg>`;
+    }
+
+    function fruitSVG(key) {
+      if (key === 'banana') return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><path d="M26 54 C35 23, 66 16, 91 23 C80 29, 69 38, 63 49 C57 60, 54 72, 54 83 C42 78, 32 69, 26 54 Z" fill="#ffc928"/><path d="M24 68 C33 40, 60 30, 81 32 C73 38, 66 47, 63 57 C60 66, 59 75, 60 84 C47 83, 34 79, 24 68 Z" fill="#ffdb4d"/><path d="M29 82 C37 57, 61 47, 79 49 C72 54, 67 62, 64 70 C61 78, 61 86, 62 93 C49 95, 37 92, 29 82 Z" fill="#ffbf24"/><rect x="86" y="18" width="7" height="10" rx="2" fill="#a86d22"/></svg>`;
+      if (key === 'strawberry') return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><path d="M58 24 C45 24, 34 35, 34 51 C34 73, 49 92, 60 92 C71 92, 86 73, 86 51 C86 35, 75 24, 62 24 Z" fill="#f53a30"/><path d="M48 23 L60 14 L72 23" fill="#2dbb5d"/><circle cx="52" cy="44" r="1.8" fill="#7a2a17"/><circle cx="63" cy="41" r="1.8" fill="#7a2a17"/><circle cx="71" cy="50" r="1.8" fill="#7a2a17"/><circle cx="56" cy="56" r="1.8" fill="#7a2a17"/><circle cx="67" cy="61" r="1.8" fill="#7a2a17"/></svg>`;
+      if (key === 'melon') return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="55" r="34" fill="#dfe8da"/><path d="M60 21 C58 18, 58 14, 62 12 C65 14, 65 18, 63 21" fill="#caa84d"/><path d="M35 40 C48 28, 73 27, 84 39 C90 46, 93 56, 88 68 C80 84, 60 89, 45 82 C30 75, 25 56, 35 40 Z" fill="none" stroke="#b7c5b0" stroke-width="2"/></svg>`;
+      if (key === 'grape') return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><rect x="68" y="13" width="8" height="10" rx="2" fill="#89612b"/><circle cx="54" cy="30" r="11" fill="#5676e8"/><circle cx="68" cy="29" r="11" fill="#5b7ff0"/><circle cx="80" cy="36" r="11" fill="#4e71df"/><circle cx="50" cy="44" r="11" fill="#6b89f2"/><circle cx="64" cy="44" r="11" fill="#597cf0"/><circle cx="78" cy="47" r="11" fill="#4b6cda"/><circle cx="56" cy="58" r="11" fill="#6281ee"/><circle cx="70" cy="59" r="11" fill="#5376e2"/><circle cx="62" cy="73" r="11" fill="#6e8df3"/></svg>`;
+      if (key === 'watermelon') return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><path d="M25 68 A36 36 0 0 1 95 68 Z" fill="#16a65a"/><path d="M31 66 A30 30 0 0 1 89 66 Z" fill="#ffffff"/><path d="M35 63 A26 26 0 0 1 85 63 Z" fill="#f53b30"/></svg>`;
+      if (key === 'orange') return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="56" r="28" fill="#ff9c2e"/><circle cx="52" cy="50" r="10" fill="#ffb84f" opacity="0.55"/><path d="M63 28 C63 20, 69 15, 76 15" stroke="#9a5a22" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M75 15 C83 16, 87 21, 89 29 C82 27, 77 24, 75 15 Z" fill="#57c558"/></svg>`;
+      return `<svg class="fruitSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg"><circle cx="60" cy="56" r="30" fill="#ff4438"/><path d="M63 24 C63 16, 69 11, 76 11" stroke="#9a5a22" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M75 11 C83 12, 87 17, 89 25 C82 23, 77 20, 75 11 Z" fill="#57c558"/></svg>`;
+    }
+
+    function hatSVG(key) {
+      const colors = {
+        redhat: '#ef5a5a',
+        yellowhat: '#f2cf43',
+        whitehat: '#ffffff',
+        bluehat: '#5a9df0',
+        greenhat: '#67b96b',
+        pinkhat: '#ef9fc1',
+        blackhat: '#333333'
+      };
+      const brimStroke = key === 'whitehat' ? '#bdbdbd' : '#666666';
+      const body = colors[key] || '#cccccc';
+      return `
+        <svg class="hatSvg" viewBox="0 0 120 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="60" cy="68" rx="36" ry="10" fill="${body}" stroke="${brimStroke}" stroke-width="3"/>
+          <path d="M38 66 C38 46, 47 30, 60 30 C73 30, 82 46, 82 66 Z" fill="${body}" stroke="${brimStroke}" stroke-width="3"/>
+          <path d="M47 55 C51 44, 57 38, 64 38 C70 38, 75 45, 78 55" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="4" stroke-linecap="round"/>
+        </svg>`;
+    }
+
+    function renderHorizontalScene(leftLabel, rightLabel, renderer, btnClass) {
+      playAreaEl.innerHTML = '';
+      const scene = document.createElement('div');
+      scene.className = 'hScene';
+
+      const left = document.createElement('div');
+      left.className = 'dirLabelSide';
+      left.textContent = leftLabel;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'railWrap';
+      const rail = document.createElement('div');
+      rail.className = 'rail';
+
+      state.items.forEach((item, index) => {
+        const btn = document.createElement('button');
+        const selected = state.mode === 'count'
+          ? state.selectedIndexes.includes(index)
+          : state.selectedIndex === index;
+        btn.className = `itemBtn ${btnClass}` + (selected ? ' selected' : '');
+        btn.innerHTML = renderer(item.key, selected);
+        btn.addEventListener('click', () => {
+          if (state.locked) return;
+
+          if (state.mode === 'count') {
+            if (state.selectedIndexes.includes(index)) {
+              state.selectedIndexes = state.selectedIndexes.filter(i => i !== index);
+            } else {
+              state.selectedIndexes = [...state.selectedIndexes, index].sort((a, b) => a - b);
+            }
+          } else {
+            state.selectedIndex = index;
+          }
+
+          renderCurrentScene();
+          updateMessage();
+        });
+        rail.appendChild(btn);
+      });
+
+      wrap.appendChild(rail);
+
+      const right = document.createElement('div');
+      right.className = 'dirLabelSide';
+      right.textContent = rightLabel;
+
+      scene.appendChild(left);
+      scene.appendChild(wrap);
+      scene.appendChild(right);
+      playAreaEl.appendChild(scene);
+    }
+
+    function renderVerticalScene() {
+      playAreaEl.innerHTML = '';
+      const scene = document.createElement('div');
+      scene.className = 'vScene';
+
+      const top = document.createElement('div');
+      top.className = 'dirLabelTopBottom';
+      top.textContent = 'うえ';
+
+      const row = document.createElement('div');
+      row.className = 'boardRow';
+      const wrap = document.createElement('div');
+      wrap.className = 'shelfWrap';
+      const shelf = document.createElement('div');
+      shelf.className = 'shelf';
+
+      const buttons = [];
+      state.items.forEach((item, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'itemBtn hatBtn' + (state.selectedIndex === index ? ' selected' : '');
+        btn.innerHTML = hatSVG(item.key);
+        btn.addEventListener('click', () => {
+          if (state.locked) return;
+          state.selectedIndex = index;
+          renderCurrentScene();
+          updateMessage();
+        });
+        shelf.appendChild(btn);
+        buttons.push(btn);
+      });
+
+      wrap.appendChild(shelf);
+      row.appendChild(wrap);
+
+      const bottom = document.createElement('div');
+      bottom.className = 'dirLabelTopBottom';
+      bottom.textContent = 'した';
+
+      scene.appendChild(top);
+      scene.appendChild(row);
+      scene.appendChild(bottom);
+      playAreaEl.appendChild(scene);
+
+      requestAnimationFrame(() => {
+        const shelfRect = shelf.getBoundingClientRect();
+        for (let i = 0; i < buttons.length - 1; i++) {
+          const currentRect = buttons[i].getBoundingClientRect();
+          const nextRect = buttons[i + 1].getBoundingClientRect();
+          const middleY = ((currentRect.bottom + nextRect.top) / 2) - shelfRect.top;
+          const line = document.createElement('div');
+          line.className = 'shelfLine';
+          line.style.top = `${middleY}px`;
+          shelf.appendChild(line);
+        }
+      });
+    }
+
+    function renderCurrentScene() {
+      if (state.type === 'car') {
+        renderHorizontalScene('まえ', 'うしろ', carSVG, 'carBtn');
+      } else if (state.type === 'fruit') {
+        renderHorizontalScene('ひだり', 'みぎ', fruitSVG, 'fruitBtn');
+      } else {
+        renderVerticalScene();
+      }
+    }
+
+    function nextProblem() {
+      makeProblem();
+      updateQuestion();
+      renderCurrentScene();
+      messageEl.className = 'message';
+      messageEl.textContent = '';
+      pointsEl.textContent = `${state.points}ポイント`;
+    }
+
+    nextProblem();
+  </script>
+</body>
+</html>
